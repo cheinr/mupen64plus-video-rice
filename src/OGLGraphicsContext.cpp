@@ -74,7 +74,7 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
 
     // init sdl & gl
     DebugMessage(M64MSG_VERBOSE, "Initializing video subsystem...");
-    if (CoreVideo_Init() != M64ERR_SUCCESS)   
+    if (CoreVideo_Init() != M64ERR_SUCCESS)
         return false;
 
     /* hard-coded attribute values */
@@ -150,7 +150,7 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
     Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
     UpdateFrame();
 #endif
-    
+
     m_bReady = true;
 
     return true;
@@ -205,7 +205,7 @@ bool COGLGraphicsContext::ResizeInitialize(uint32 dwWidth, uint32 dwHeight, BOOL
     UpdateFrame();
     Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
     UpdateFrame();
-    
+
     return true;
 }
 
@@ -229,7 +229,7 @@ void COGLGraphicsContext::InitState(void)
     glShadeModel(GL_SMOOTH);
     OPENGL_CHECK_ERRORS;
 
-    //position viewer 
+    //position viewer
     //glMatrixMode(GL_MODELVIEW);
     //glLoadIdentity();
 
@@ -271,7 +271,7 @@ void COGLGraphicsContext::InitState(void)
     OPENGL_CHECK_ERRORS;
     glLoadIdentity();
     OPENGL_CHECK_ERRORS;
-    
+
     glDepthRange(-1, 1);
 
 #else
@@ -342,7 +342,6 @@ void COGLGraphicsContext::Clear(ClearFlag dwFlags, uint32 color, float depth)
     float b = ((color    )&0xFF)/255.0f;
     float a = ((color>>24)&0xFF)/255.0f;
     glClearColor(r, g, b, a);
-    glClearColor(1.0, 0.0, 0.0, 1.0);
     OPENGL_CHECK_ERRORS;
     glClearDepth(depth);
     OPENGL_CHECK_ERRORS;
@@ -405,7 +404,7 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
         }
     */
 
-   
+
    // if emulator defined a render callback function, call it before buffer swap
 
 #if !(EMSCRIPTEN)
@@ -414,7 +413,7 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
 #endif
 
    CoreVideo_GL_SwapBuffers();
-   
+
    /*if(options.bShowFPS)
      {
     static unsigned int lastTick=0;

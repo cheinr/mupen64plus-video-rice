@@ -984,6 +984,9 @@ extern bool frameWriteByCPURectFlag[20][20];
 
 void FrameBufferManager::UpdateFrameBufferBeforeUpdateFrame()
 {
+#if EMSCRIPTEN
+  return;
+#endif
     if( (frameBufferOptions.bProcessCPUWrite && status.frameWriteByCPU ) ||
         (frameBufferOptions.bLoadBackBufFromRDRAM && !FrameBufferInRDRAMCheckCRC() ) )      
         // Checks if frame buffer has been modified by CPU
@@ -1262,6 +1265,9 @@ int FrameBufferManager::FindASlot(void)
 
 void FrameBufferManager::SetRenderTexture(void)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     memcpy(&(newRenderTextureInfo.CI_Info), &g_CI, sizeof(SetImgInfo));
 
     newRenderTextureInfo.N64Width = newRenderTextureInfo.CI_Info.dwWidth;
@@ -1413,6 +1419,9 @@ void FrameBufferManager::CloseRenderTexture(bool toSave)
 
 void FrameBufferManager::ClearN64FrameBufferToBlack(uint32 left, uint32 top, uint32 width, uint32 height)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     RecentCIInfo &p = *(g_uRecentCIInfoPtrs[0]);
     uint16 *frameBufferBase = (uint16*)(g_pRDRAMu8+p.dwAddr);
     uint32 pitch = p.dwWidth;
@@ -1456,6 +1465,9 @@ void InitTlutReverseLookup(void)
 // **buggy**
 void FrameBufferManager::CopyBackToFrameBufferIfReadByCPU(uint32 addr)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     int i = FindRecentCIInfoIndex(addr);
     if( i != -1 )
     {
@@ -1470,6 +1482,9 @@ void FrameBufferManager::CopyBackToFrameBufferIfReadByCPU(uint32 addr)
 // We do these checks to see if a render_texture operation is occurring...
 void FrameBufferManager::CheckRenderTextureCRCInRDRAM(void)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     for( int i=0; i<numOfTxtBufInfos; i++ )
     {
         if( !gRenderTextureInfos[i].isUsed )    
@@ -1545,6 +1560,9 @@ int FrameBufferManager::CheckAddrInRenderTextures(uint32 addr, bool checkcrc)
 // Load texture from render_texture buffer
 void FrameBufferManager::LoadTextureFromRenderTexture(TxtrCacheEntry* pEntry, int infoIdx)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     if( infoIdx < 0 || infoIdx >= numOfTxtBufInfos )
     {
         infoIdx = CheckAddrInRenderTextures(pEntry->ti.Address);
@@ -1559,6 +1577,9 @@ void FrameBufferManager::LoadTextureFromRenderTexture(TxtrCacheEntry* pEntry, in
 
 void FrameBufferManager::RestoreNormalBackBuffer()
 {
+#if EMSCRIPTEN
+  return;
+#endif
     if( m_curRenderTextureIndex >= 0 && m_curRenderTextureIndex < numOfTxtBufInfos )
     {
         if( gRenderTextureInfos[m_curRenderTextureIndex].pRenderTexture )
@@ -1591,6 +1612,9 @@ uint32 FrameBufferManager::ComputeRenderTextureCRCInRDRAM(int infoIdx)
 // Activates texture buffer for drawing
 void FrameBufferManager::ActiveTextureBuffer(void)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     status.bCIBufferIsRendered = true;
 
     if( status.bHandleN64RenderTexture )
@@ -1690,6 +1714,10 @@ void FrameBufferManager::ActiveTextureBuffer(void)
 // Sets CI address for framebuffer copies
 void FrameBufferManager::Set_CI_addr(SetImgInfo &newCI)
 {
+#if EMSCRIPTEN
+  return;
+#endif
+
     bool wasDrawingTextureBuffer = status.bN64IsDrawingTextureBuffer;
     status.bN64IsDrawingTextureBuffer = ( newCI.dwSize != TXT_SIZE_16b || newCI.dwFormat != TXT_FMT_RGBA || newCI.dwWidth < 200 || ( newCI.dwAddr != g_ZI.dwAddr && newCI.dwWidth != 512 && !g_pFrameBufferManager->HasAddrBeenDisplayed(newCI.dwAddr, newCI.dwWidth)) );
     status.bN64FrameBufferIsUsed = status.bN64IsDrawingTextureBuffer;
@@ -1827,6 +1855,9 @@ void FrameBufferManager::Set_CI_addr(SetImgInfo &newCI)
 
 void FrameBufferManager::StoreRenderTextureToRDRAM(int infoIdx)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     if( !frameBufferOptions.bRenderTextureWriteBack )
         return;
 
@@ -1849,6 +1880,9 @@ void FrameBufferManager::StoreRenderTextureToRDRAM(int infoIdx)
 //does FB copy to N64 RDAM structure
 void FrameBufferManager::CopyBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, TextureFmt bufFmt, void *buffer, uint32 bufPitch)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     uint32 startline=0;
     
     if( startaddr == 0xFFFFFFFF )
@@ -2031,6 +2065,10 @@ void FrameBufferManager::DisplayRenderTexture(int infoIdx)
 // so that we can use it for framebuffer effects
 void FrameBufferManager::SaveBackBuffer(int ciInfoIdx, RECT* pSrcRect, bool forceToSaveToRDRAM)
 {
+#if EMSCRIPTEN
+  return;
+#endif
+
     RecentCIInfo &ciInfo = *g_uRecentCIInfoPtrs[ciInfoIdx];
 
     if( ciInfoIdx == 1 )    // to save the current front buffer

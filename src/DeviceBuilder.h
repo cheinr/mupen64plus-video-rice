@@ -61,8 +61,12 @@ protected:
 
     static CDeviceBuilder* CreateBuilder(SupportedDeviceType type);
     static SupportedDeviceType m_deviceType;
+#if EMSCRIPTEN
+public:
+	// Poor static initialization on emscripten
+#endif
     static CDeviceBuilder* m_pInstance;
-
+protected:
     CRender* m_pRender;
     CGraphicsContext* m_pGraphicsContext;
     CColorCombiner* m_pColorCombiner;
@@ -86,5 +90,3 @@ protected:
 };
 
 #endif
-
-

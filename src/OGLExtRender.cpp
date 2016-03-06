@@ -236,6 +236,7 @@ void COGLExtRender::SetTextureVFlag(TextureUVFlag dwFlag, uint32 dwTile)
 
 void COGLExtRender::EnableTexUnit(int unitno, BOOL flag)
 {
+#if !(EMSCRIPTEN)
     if( m_texUnitEnabled[unitno] != flag )
     {
         m_texUnitEnabled[unitno] = flag;
@@ -247,6 +248,7 @@ void COGLExtRender::EnableTexUnit(int unitno, BOOL flag)
             glDisable(GL_TEXTURE_2D);
         OPENGL_CHECK_ERRORS;
     }
+#endif
 }
 
 void COGLExtRender::ApplyTextureFilter()

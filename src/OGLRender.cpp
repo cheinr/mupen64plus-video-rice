@@ -1037,6 +1037,8 @@ void OGLRender::DisBindTexture(GLuint texture, int unitno)
 
 void OGLRender::EnableTexUnit(int unitno, BOOL flag)
 {
+
+#if !(EMSCRIPTEN)
 #ifdef DEBUGGER
     if( unitno != 0 )
     {
@@ -1051,6 +1053,8 @@ void OGLRender::EnableTexUnit(int unitno, BOOL flag)
         else
             glDisable(GL_TEXTURE_2D);
     }
+#endif
+
 }
 
 void OGLRender::TexCoord2f(float u, float v)
@@ -1065,6 +1069,10 @@ void OGLRender::TexCoord(TLITVERTEX &vtxInfo)
 
 void OGLRender::UpdateScissor()
 {
+#if EMSCRIPTEN
+  return;
+#endif
+
     if( options.bEnableHacks && g_CI.dwWidth == 0x200 && gRDP.scissor.right == 0x200 && g_CI.dwWidth>(*g_GraphicsInfo.VI_WIDTH_REG & 0xFFF) )
     {
         // Hack for RE2
@@ -1084,6 +1092,9 @@ void OGLRender::UpdateScissor()
 
 void OGLRender::ApplyRDPScissor(bool force)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     if( !force && status.curScissor == RDP_SCISSOR )    return;
 
     if( options.bEnableHacks && g_CI.dwWidth == 0x200 && gRDP.scissor.right == 0x200 && g_CI.dwWidth>(*g_GraphicsInfo.VI_WIDTH_REG & 0xFFF) )
@@ -1109,6 +1120,9 @@ void OGLRender::ApplyRDPScissor(bool force)
 
 void OGLRender::ApplyScissorWithClipRatio(bool force)
 {
+#if EMSCRIPTEN
+  return;
+#endif
     if( !force && status.curScissor == RSP_SCISSOR )    return;
 
     glEnable(GL_SCISSOR_TEST);
@@ -1235,7 +1249,11 @@ void OGLRender::glViewportWrapper(GLint x, GLint y, GLsizei width, GLsizei heigh
         OPENGL_CHECK_ERRORS;
         if( flag )  glOrtho(0, windowSetting.uDisplayWidth, windowSetting.uDisplayHeight, 0, -1, 1);
         OPENGL_CHECK_ERRORS;
+#if EMSCRIPTEN
+		glViewport(0,0,width,height);
+#else
         glViewport(x,y,width,height);
+#endif
         OPENGL_CHECK_ERRORS;
     }
 }

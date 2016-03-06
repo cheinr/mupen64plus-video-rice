@@ -145,8 +145,11 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
 
     Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);    // Clear buffers
     UpdateFrame();
+
+#if !(EMSCRIPTEN)
     Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
     UpdateFrame();
+#endif
     
     m_bReady = true;
 
@@ -339,6 +342,7 @@ void COGLGraphicsContext::Clear(ClearFlag dwFlags, uint32 color, float depth)
     float b = ((color    )&0xFF)/255.0f;
     float a = ((color>>24)&0xFF)/255.0f;
     glClearColor(r, g, b, a);
+    glClearColor(1.0, 0.0, 0.0, 1.0);
     OPENGL_CHECK_ERRORS;
     glClearDepth(depth);
     OPENGL_CHECK_ERRORS;
@@ -350,8 +354,10 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
 {
     status.gFrameCount++;
 
+#if !(EMSCRIPTEN)
     glFlush();
     OPENGL_CHECK_ERRORS;
+#endif
     //glFinish();
     //wglSwapIntervalEXT(0);
 
@@ -401,8 +407,11 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
 
    
    // if emulator defined a render callback function, call it before buffer swap
+
+#if !(EMSCRIPTEN)
    if(renderCallback)
        (*renderCallback)(status.bScreenIsDrawn);
+#endif
 
    CoreVideo_GL_SwapBuffers();
    
@@ -422,6 +431,8 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
       }
      }*/
 
+#if !(EMSCRIPTEN)
+
     glDepthMask(GL_TRUE);
     OPENGL_CHECK_ERRORS;
     glClearDepth(1.0f);
@@ -433,6 +444,7 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
     }
     else
         needCleanScene = true;
+#endif
 
     status.bScreenIsDrawn = false;
 }

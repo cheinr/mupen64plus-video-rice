@@ -175,10 +175,13 @@ static void UpdateScreenStep2 (void)
     }
 
     g_CritialSection.Lock();
+
+#if !(EMSCRIPTEN)
     if( status.bHandleN64RenderTexture )
         g_pFrameBufferManager->CloseRenderTexture(true);
     
     g_pFrameBufferManager->SetAddrBeDisplayed(*g_GraphicsInfo.VI_ORIGIN_REG);
+#endif
 
     if( status.gDlistCount == 0 )
     {
@@ -186,8 +189,10 @@ static void UpdateScreenStep2 (void)
         uint32 width = *g_GraphicsInfo.VI_WIDTH_REG;
         if( (*g_GraphicsInfo.VI_ORIGIN_REG & (g_dwRamSize-1) ) > width*2 && *g_GraphicsInfo.VI_H_START_REG != 0 && width != 0 )
         {
+#if !(EMSCRIPTEN)
             SetVIScales();
             CRender::GetRender()->DrawFrameBuffer(true);
+#endif
             CGraphicsContext::Get()->UpdateFrame();
         }
         g_CritialSection.Unlock();
@@ -279,7 +284,9 @@ static void ProcessDListStep2(void)
     g_CritialSection.Lock();
     if( status.toShowCFB )
     {
+#if !(EMSCRIPTEN)
         CRender::GetRender()->DrawFrameBuffer(true);
+#endif
         status.toShowCFB = false;
     }
 
@@ -572,6 +579,12 @@ extern "C" {
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Context,
                                    void (*DebugCallback)(void *, int, const char *))
 {
+#if EMSCRIPTEN
+  // emscripten has issues with initialiation of static data in loaded modules.
+  l_PluginInit = 0;
+  CDeviceBuilder::m_pInstance=NULL;
+#endif
+
     if (l_PluginInit)
         return M64ERR_ALREADY_INIT;
 
@@ -887,7 +900,9 @@ EXPORT void CALL ProcessDList(void)
 
 EXPORT void CALL FBRead(uint32 addr)
 {
+#if !(EMSCRIPTEN)
     g_pFrameBufferManager->FrameBufferReadByCPU(addr);
+#endif
 }
 
 
@@ -907,7 +922,9 @@ EXPORT void CALL FBRead(uint32 addr)
 
 EXPORT void CALL FBWrite(uint32 addr, uint32 size)
 {
+#if !(EMSCRIPTEN)
     g_pFrameBufferManager->FrameBufferWriteByCPU(addr, size);
+#endif
 }
 
 /************************************************************************
@@ -1001,6 +1018,7 @@ EXPORT void CALL ReadScreen2(void *dest, int *width, int *height, int bFront)
 
     unsigned char *frameBuffer = (unsigned char *)malloc((*width)*(*height)*4);
 
+#if !(EMSCRIPTEN)
     glReadPixels( 0, 0, windowSetting.uDisplayWidth, windowSetting.uDisplayHeight,
                  GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer );
     //Convert RGBA to RGB
@@ -1016,6 +1034,7 @@ EXPORT void CALL ReadScreen2(void *dest, int *width, int *height, int bFront)
         }
         line += windowSetting.uDisplayWidth * 3;
     }
+#endif
 
     free(frameBuffer);
 #endif

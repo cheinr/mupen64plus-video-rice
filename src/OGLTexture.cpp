@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "TextureManager.h"
 #include "osal_opengl.h"
 
+#include "emscripten.h"
+
 COGLTexture::COGLTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
     CTexture(dwWidth,dwHeight,usage),
     m_glFmt(GL_RGBA)
@@ -43,11 +45,11 @@ COGLTexture::COGLTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
     m_dwCreatedTextureWidth = w;
     for (w = 1; w < dwHeight; w <<= 1);
     m_dwCreatedTextureHeight = w;
-    
+
     if (dwWidth*dwHeight > 256*256)
-        TRACE4("Large texture: (%d x %d), created as (%d x %d)", 
+        TRACE4("Large texture: (%d x %d), created as (%d x %d)",
             dwWidth, dwHeight,m_dwCreatedTextureWidth,m_dwCreatedTextureHeight);
-    
+
     m_fYScale = (float)m_dwCreatedTextureHeight/(float)m_dwHeight;
     m_fXScale = (float)m_dwCreatedTextureWidth/(float)m_dwWidth;
 
@@ -56,7 +58,7 @@ COGLTexture::COGLTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
     switch( options.textureQuality )
     {
     case TXT_QUALITY_DEFAULT:
-        if( options.colorQuality == TEXTURE_FMT_A4R4G4B4 ) 
+        if( options.colorQuality == TEXTURE_FMT_A4R4G4B4 )
             m_glFmt = GL_RGBA4;
         break;
     case TXT_QUALITY_32BIT:
@@ -148,6 +150,5 @@ void COGLTexture::EndUpdate(DrawInfo *di)
 
 
 // Keep in mind that the real texture is not scaled to fix the created opengl texture yet.
-// when the image is need to be scaled, ScaleImageToSurface in CTexure will be called to 
+// when the image is need to be scaled, ScaleImageToSurface in CTexure will be called to
 // scale the image automatically
-

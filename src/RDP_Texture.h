@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Render.h"
 
+#include "emscripten.h"
+
 uint32 g_TmemFlag[16];
 void SetTmemFlag(uint32 tmemAddr, uint32 size);
 bool IsTmemFlagValid(uint32 tmemAddr);
@@ -71,7 +73,7 @@ inline uint32 ReverseDXT(uint32 val, uint32 lrs, uint32 width, uint32 size)
 {
     //#define TXL2WORDS(txls, b_txl)    MAX(1, ((txls)*(b_txl)/8))
     if( val == 0x800 ) return 1;
-    
+
     unsigned int low = 2047/val;
     if( CalculateDXT(low) > val )   low++;
     unsigned int high = 2047/(val-1);
@@ -216,15 +218,15 @@ Done:
          "mov       $0, %%ecx         \n"
          "mov       %0, %%esi         \n"
          "mov       %1, %%edi         \n"
-         
+
          "mov       %%esi, %%ebx      \n"
          "and       $3, %%ebx         \n"           // ebx = number of leading bytes
-         
+
          "cmp       $0, %%ebx         \n"
          "jz            2f                \n" //jz      StartDWordLoop
          "neg       %%ebx             \n"
          "add       $4, %%ebx         \n"
-         
+
          "cmp       %3, %%ebx         \n"
          "jle           0f                \n" //jle     NotGreater
          "mov       %3, %%ebx         \n"
@@ -238,19 +240,19 @@ Done:
          "add       $1, %%edi         \n"
          "loop          1b                \n" //loop     LeadingLoop
          "add       $5, %%esi         \n"
-         
+
          "2:                              \n" //StartDWordLoop:
          "mov       %3, %%ecx         \n"
          "sub       %%ebx, %%ecx      \n"       // Don't copy what's already been copied
-         
+
          "mov       %%ecx, %%ebx      \n"
          "and       $3, %%ebx         \n"
          //     add     ecx, 3          // Round up to nearest dword
          "shr       $2, %%ecx         \n"
-         
+
          "cmp       $0, %%ecx         \n"           // If there's nothing to do, don't do it
          "jle           4f                \n" //jle     StartTrailingLoop
-         
+
          // Copies from source to destination, bswap-ing first
          "3:                              \n" //DWordLoop:
          "mov       (%%esi), %%eax    \n"
@@ -264,7 +266,7 @@ Done:
          "jz            6f                \n" //jz      Done
          "mov       %%ebx, %%ecx      \n"
          "xor       $3, %%esi         \n"
-         
+
          "5:                              \n" //TrailingLoop:
          "mov       (%%esi), %%al     \n"
          "mov       %%al, (%%edi)     \n"
@@ -768,7 +770,7 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 
         if( total64BitWordsToLoad+tile.dwTMem-info->dwTmem <= 0x200 )
         {
-            LOG_TEXTURE(TRACE4("Fix me, info is not covering this Tmem address,Info start: 0x%x, total=0x%x, Tmem start: 0x%x, total=0x%x", 
+            LOG_TEXTURE(TRACE4("Fix me, info is not covering this Tmem address,Info start: 0x%x, total=0x%x, Tmem start: 0x%x, total=0x%x",
                 info->dwTmem,info->dwTotalWords>>2, tile.dwTMem, total64BitWordsToLoad));
         }
     }
@@ -813,13 +815,13 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
     else
     {
         loadwidth = abs(tile.sh - tile.sl) +1;
-        if( tile.dwMaskS )  
+        if( tile.dwMaskS )
         {
             loadwidth = maskwidth;
         }
 
         loadheight = abs(tile.th - tile.tl) +1;
-        if( tile.dwMaskT )  
+        if( tile.dwMaskT )
         {
             loadheight = maskheight;
         }
@@ -943,12 +945,12 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
             if( clampheight > maskheight && maskheight && clampheight > 256 )   clampheight = maskheight;
         }
 
-        if( tile.dwMaskS > 8 && tile.dwMaskT > 8 )  
+        if( tile.dwMaskS > 8 && tile.dwMaskT > 8 )
         {
             maskwidth = loadwidth;
             maskheight = loadheight;
         }
-        else 
+        else
         {
             if( tile.dwMaskS > 10 )
                 maskwidth = loadwidth;
@@ -1025,7 +1027,7 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 
         if( total64BitWordsToLoad+tile.dwTMem-info->dwTmem <= 0x200 )
         {
-            LOG_TEXTURE(TRACE4("Fix me, info is not covering this Tmem address,Info start: 0x%x, total=0x%x, Tmem start: 0x%x, total=0x%x", 
+            LOG_TEXTURE(TRACE4("Fix me, info is not covering this Tmem address,Info start: 0x%x, total=0x%x, Tmem start: 0x%x, total=0x%x",
                 info->dwTmem,info->dwTotalWords>>2, tile.dwTMem, total64BitWordsToLoad));
         }
     }
@@ -1075,27 +1077,34 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 
     gti.PalAddress = (uchar *) (&g_wRDPTlut[0]);
     if( !options.bUseFullTMEM && tile.dwSize == TXT_SIZE_4b )
-        gti.PalAddress += 16  * 2 * tile.dwPalette; 
+        gti.PalAddress += 16  * 2 * tile.dwPalette;
 
     gti.Address = (info->dwLoadAddress+(tile.dwTMem-infoTmemAddr)*8) & (g_dwRamSize-1) ;
     gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
     gti.tileNo = tileno;
 
     if( g_curRomInfo.bTxtSizeMethod2 )
+    //if(true)
     {
+      //EM_ASM({console.error("bTxSizeMethod2");});
         if( !CalculateTileSizes_method_2(tileno, info, gti) )
             return NULL;
     }
     else
     {
+      //EM_ASM({console.error("NOT bTxSizeMethod2");});
         if( !CalculateTileSizes_method_1(tileno, info, gti) )
             return NULL;
     }
 
+    fprintf(stderr,"Left: %d, Top: %d, Width: %d, Height: %d, Size to Load (%d, %d)",
+        gti.LeftToLoad, gti.TopToLoad, gti.WidthToCreate, gti.HeightToCreate, gti.WidthToLoad, gti.HeightToLoad);
+        fprintf(stderr,"Pitch: %d, Addr: 0x%08x", gti.Pitch, gti.Address);
+
     LOG_TEXTURE(
     {
         TRACE0("Loading texture:\n");
-        DebuggerAppendMsg("Left: %d, Top: %d, Width: %d, Height: %d, Size to Load (%d, %d)", 
+        DebuggerAppendMsg("Left: %d, Top: %d, Width: %d, Height: %d, Size to Load (%d, %d)",
             gti.LeftToLoad, gti.TopToLoad, gti.WidthToCreate, gti.HeightToCreate, gti.WidthToLoad, gti.HeightToLoad);
         DebuggerAppendMsg("Pitch: %d, Addr: 0x%08x", gti.Pitch, gti.Address);
     });
@@ -1169,7 +1178,7 @@ void PrepareTextures()
                         }
                     }
 
-                    CRender::g_pRender->SetCurrentTexture( tilenos[i], 
+                    CRender::g_pRender->SetCurrentTexture( tilenos[i],
                         (pEntry->pEnhancedTexture)?pEntry->pEnhancedTexture:pEntry->pTexture,
                         pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
                 }
@@ -1205,7 +1214,7 @@ uint32 dwTLutFmt = (gRDP.otherModeH >> RSP_SETOTHERMODE_SHIFT_TEXTLUT)&0x3;
 
 uint32 dwCount;
 // starting location in the palettes
-uint32 dwTMEMOffset = gRDP.tiles[tileno].dwTMem - 256;  
+uint32 dwTMEMOffset = gRDP.tiles[tileno].dwTMem - 256;
 // number to copy
 dwCount = ((uint16)((gfx->words.w1) >> 14) & 0x03FF) + 1;
 uint32 dwRDRAMOffset = 0;
@@ -1245,13 +1254,13 @@ if( options.bUseFullTMEM )
 
 LOG_TEXTURE(
 {
-DebuggerAppendMsg("LoadTLut Tile: %d Start: 0x%X+0x%X, Count: 0x%X\nFmt is %s, TMEM=0x%X\n", 
+DebuggerAppendMsg("LoadTLut Tile: %d Start: 0x%X+0x%X, Count: 0x%X\nFmt is %s, TMEM=0x%X\n",
                  tileno, g_TI.dwAddr, dwRDRAMOffset, dwCount,textluttype[dwTLutFmt],
                  dwTMEMOffset);
 
 DebuggerAppendMsg("    :ULS: 0x%X, ULT:0x%X, LRS: 0x%X, LRT:0x%X\n", uls, ult, lrs,lrt);
 
-if( pauseAtNext && eventToPause == NEXT_LOADTLUT && dwCount == 16 ) 
+if( pauseAtNext && eventToPause == NEXT_LOADTLUT && dwCount == 16 )
     {
     char buf[2000];
     strcpy(buf, "Data:\n");
@@ -1326,7 +1335,7 @@ void DLParser_LoadBlock(Gfx *gfx)
             memcpy(&g_tmemInfo0, &info, sizeof(TMEMLoadMapInfo) );
             g_tmemInfo0.dwTotalWords = size>>2;
         }
-        
+
         if( size == 2048 )
         {
             memcpy(&g_tmemInfo1, &info, sizeof(TMEMLoadMapInfo) );
@@ -1503,7 +1512,7 @@ void DLParser_LoadTile(Gfx *gfx)
             (lrs - uls)+1, (lrt - ult)+1);
     });
 
-    
+
     DEBUGGER_PAUSE_COUNT_N(NEXT_TEXTURE_CMD);
 
     LOG_UCODE("    Tile:%d (%d,%d) -> (%d,%d) [%d x %d]",
@@ -1521,7 +1530,7 @@ void DLParser_LoadTile(Gfx *gfx)
     info.sh = lrs;
     info.tl = ult;
     info.th = lrt;
-    
+
     info.dxt = 0;
     info.dwLine = tile.dwLine;
     info.dwTmem = tile.dwTMem;
@@ -1727,7 +1736,7 @@ void DLParser_SetTileSize(Gfx *gfx)
     LOG_TEXTURE(
     {
     DebuggerAppendMsg("SetTileSize:%d (%d/4,%d/4) -> (%d/4,%d/4) [%d x %d]\n",
-        tileno, sl, tl, sh, th, 
+        tileno, sl, tl, sh, th,
         ((sh/4) - (sl/4)) + 1, ((th/4) - (tl/4)) + 1);
     });
     DEBUGGER_PAUSE_COUNT_N(NEXT_TEXTURE_CMD);
@@ -1773,7 +1782,7 @@ void DLParser_TexRect(Gfx *gfx)
 
     status.primitiveType = PRIM_TEXTRECT;
 
-    // This command used 128bits, and not 64 bits. This means that we have to look one 
+    // This command used 128bits, and not 64 bits. This means that we have to look one
     // Command ahead in the buffer, and update the PC.
     uint32 dwPC = gDlistStack[gDlistStackPointer].pc;       // This points to the next instruction
     uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
@@ -1783,7 +1792,7 @@ void DLParser_TexRect(Gfx *gfx)
 
     if( options.enableHackForGames == HACK_FOR_ALL_STAR_BASEBALL || options.enableHackForGames == HACK_FOR_MLB )
     {
-        if( ((dwHalf1>>24) == 0xb4 || (dwHalf1>>24) == 0xb3 || (dwHalf1>>24) == 0xb2 || (dwHalf1>>24) == 0xe1) && 
+        if( ((dwHalf1>>24) == 0xb4 || (dwHalf1>>24) == 0xb3 || (dwHalf1>>24) == 0xb2 || (dwHalf1>>24) == 0xe1) &&
             ((dwHalf2>>24) == 0xb4 || (dwHalf2>>24) == 0xb3 || (dwHalf2>>24) == 0xb2 || (dwHalf2>>24) == 0xf1) )
         {
             // Increment PC so that it points to the right place
@@ -1799,7 +1808,7 @@ void DLParser_TexRect(Gfx *gfx)
 
             // fix me here
             dwCmd2 = (((dwHalf1>>12)&0x03FF)<<17) | (((dwHalf1)&0x03FF)<<1);
-        }   
+        }
     }
     else
     {
@@ -1826,7 +1835,7 @@ void DLParser_TexRect(Gfx *gfx)
     uint16 uT       = (uint16)(  dwCmd2    )&0xFFFF;
     uint16  uDSDX   = (uint16)((  dwCmd3>>16)&0xFFFF);
     uint16  uDTDY       = (uint16)((  dwCmd3    )&0xFFFF);
-    
+
 
     if( (int)dwXL >= gRDP.scissor.right || (int)dwYL >= gRDP.scissor.bottom || (int)dwXH < gRDP.scissor.left || (int)dwYH < gRDP.scissor.top )
     {
@@ -1886,9 +1895,9 @@ void DLParser_TexRect(Gfx *gfx)
     }
     else
     {
-        if( status.bHandleN64RenderTexture && //status.bDirectWriteIntoRDRAM && 
-            g_pRenderTextureInfo->CI_Info.dwFormat == gRDP.tiles[tileno].dwFormat && 
-            g_pRenderTextureInfo->CI_Info.dwSize == gRDP.tiles[tileno].dwSize && 
+        if( status.bHandleN64RenderTexture && //status.bDirectWriteIntoRDRAM &&
+            g_pRenderTextureInfo->CI_Info.dwFormat == gRDP.tiles[tileno].dwFormat &&
+            g_pRenderTextureInfo->CI_Info.dwSize == gRDP.tiles[tileno].dwSize &&
             gRDP.tiles[tileno].dwFormat == TXT_FMT_CI && gRDP.tiles[tileno].dwSize == TXT_SIZE_8b )
         {
             if( options.enableHackForGames == HACK_FOR_YOSHI )
@@ -1935,11 +1944,11 @@ void DLParser_TexRect(Gfx *gfx)
 
 
 void DLParser_TexRectFlip(Gfx *gfx)
-{ 
+{
     status.bCIBufferIsRendered = true;
     status.primitiveType = PRIM_TEXTRECTFLIP;
 
-    // This command used 128bits, and not 64 bits. This means that we have to look one 
+    // This command used 128bits, and not 64 bits. This means that we have to look one
     // Command ahead in the buffer, and update the PC.
     uint32 dwPC = gDlistStack[gDlistStackPointer].pc;       // This points to the next instruction
     uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
@@ -1960,7 +1969,7 @@ void DLParser_TexRectFlip(Gfx *gfx)
 
     uint32 curTile = gRSP.curTile;
     ForceMainTextureIndex(tileno);
-    
+
     float fS0 = (float)dwS / 32.0f;
     float fT0 = (float)dwT / 32.0f;
 
@@ -1983,7 +1992,7 @@ void DLParser_TexRectFlip(Gfx *gfx)
 
     float fS1 = fS0 + (fDSDX * (dwYH - dwYL));
     float fT1 = fT0 + (fDTDY * (dwXH - dwXL));
-    
+
     LOG_UCODE("    Tile:%d (%d,%d) -> (%d,%d)",
         tileno, dwXL, dwYL, dwXH, dwYH);
     LOG_UCODE("    Tex:(%#5f,%#5f) -> (%#5f,%#5f) (DSDX:%#5f DTDY:%#5f)",
@@ -2071,7 +2080,7 @@ void TMEM_SetBlock(uint32 tmemstart, uint32 length, uint32 rdramaddr)
             }
         }
 
-        if ( p->start == tmemstart ) 
+        if ( p->start == tmemstart )
         {
             // need to replace the block of 'p'
             // or append a new block depend the block lengths
@@ -2237,4 +2246,3 @@ void SetTmemFlag(uint32 tmemAddr, uint32 size)
         }
     }
 }
-

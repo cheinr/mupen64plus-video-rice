@@ -24,7 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Render.h"
 
+#if EMSCRIPTEN
 #include "emscripten.h"
+#endif
 
 uint32 g_TmemFlag[16];
 void SetTmemFlag(uint32 tmemAddr, uint32 size);
@@ -1096,10 +1098,6 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
         if( !CalculateTileSizes_method_1(tileno, info, gti) )
             return NULL;
     }
-
-    fprintf(stderr,"Left: %d, Top: %d, Width: %d, Height: %d, Size to Load (%d, %d)",
-        gti.LeftToLoad, gti.TopToLoad, gti.WidthToCreate, gti.HeightToCreate, gti.WidthToLoad, gti.HeightToLoad);
-        fprintf(stderr,"Pitch: %d, Addr: 0x%08x", gti.Pitch, gti.Address);
 
     LOG_TEXTURE(
     {

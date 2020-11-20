@@ -563,33 +563,33 @@ bool OGLRender::RenderTexRect()
 #else
 
     GLfloat colour[] = {
-            g_texRectTVtx[3].r, g_texRectTVtx[3].g, g_texRectTVtx[3].b, g_texRectTVtx[3].a,
-            g_texRectTVtx[2].r, g_texRectTVtx[2].g, g_texRectTVtx[2].b, g_texRectTVtx[2].a,
-            g_texRectTVtx[1].r, g_texRectTVtx[1].g, g_texRectTVtx[1].b, g_texRectTVtx[1].a,
-            g_texRectTVtx[0].r, g_texRectTVtx[0].g, g_texRectTVtx[0].b, g_texRectTVtx[0].a
+      (float) g_texRectTVtx[3].r, (float) g_texRectTVtx[3].g, (float) g_texRectTVtx[3].b, (float) g_texRectTVtx[3].a,
+            (float) g_texRectTVtx[2].r, (float) g_texRectTVtx[2].g, (float) g_texRectTVtx[2].b, (float) g_texRectTVtx[2].a,
+            (float) g_texRectTVtx[1].r, (float) g_texRectTVtx[1].g, (float) g_texRectTVtx[1].b, (float) g_texRectTVtx[1].a,
+            (float) g_texRectTVtx[0].r, (float) g_texRectTVtx[0].g, (float) g_texRectTVtx[0].b, (float) g_texRectTVtx[0].a
     };
 
     GLfloat tex[] = {
-            g_texRectTVtx[3].tcord[0].u,g_texRectTVtx[3].tcord[0].v,
-            g_texRectTVtx[2].tcord[0].u,g_texRectTVtx[2].tcord[0].v,
-            g_texRectTVtx[1].tcord[0].u,g_texRectTVtx[1].tcord[0].v,
-            g_texRectTVtx[0].tcord[0].u,g_texRectTVtx[0].tcord[0].v
+            (float) g_texRectTVtx[3].tcord[0].u,(float) g_texRectTVtx[3].tcord[0].v,
+            (float) g_texRectTVtx[2].tcord[0].u,(float) g_texRectTVtx[2].tcord[0].v,
+            (float) g_texRectTVtx[1].tcord[0].u,(float) g_texRectTVtx[1].tcord[0].v,
+            (float) g_texRectTVtx[0].tcord[0].u,(float) g_texRectTVtx[0].tcord[0].v
     };
 
     GLfloat tex2[] = {
-            g_texRectTVtx[3].tcord[1].u,g_texRectTVtx[3].tcord[1].v,
-            g_texRectTVtx[2].tcord[1].u,g_texRectTVtx[2].tcord[1].v,
-            g_texRectTVtx[1].tcord[1].u,g_texRectTVtx[1].tcord[1].v,
-            g_texRectTVtx[0].tcord[1].u,g_texRectTVtx[0].tcord[1].v
+            (float) g_texRectTVtx[3].tcord[1].u,(float) g_texRectTVtx[3].tcord[1].v,
+            (float) g_texRectTVtx[2].tcord[1].u,(float) g_texRectTVtx[2].tcord[1].v,
+            (float) g_texRectTVtx[1].tcord[1].u,(float) g_texRectTVtx[1].tcord[1].v,
+            (float) g_texRectTVtx[0].tcord[1].u,(float) g_texRectTVtx[0].tcord[1].v
     };
 
     float w = windowSetting.uDisplayWidth / 2.0f, h = windowSetting.uDisplayHeight / 2.0f, inv = 1.0f;
 
     GLfloat vertices[] = {
-            -inv + g_texRectTVtx[3].x / w, inv - g_texRectTVtx[3].y / h, depth, 1,
-            -inv + g_texRectTVtx[2].x / w, inv - g_texRectTVtx[2].y / h, depth, 1,
-            -inv + g_texRectTVtx[1].x / w, inv - g_texRectTVtx[1].y / h, depth, 1,
-            -inv + g_texRectTVtx[0].x / w, inv - g_texRectTVtx[0].y / h, depth, 1
+            -inv + (float) g_texRectTVtx[3].x / w, inv - (float) g_texRectTVtx[3].y / h, depth, 1,
+            -inv + (float) g_texRectTVtx[2].x / w, inv - (float) g_texRectTVtx[2].y / h, depth, 1,
+            -inv + (float) g_texRectTVtx[1].x / w, inv - (float) g_texRectTVtx[1].y / h, depth, 1,
+            -inv + (float) g_texRectTVtx[0].x / w, inv - (float) g_texRectTVtx[0].y / h, depth, 1
     };
 
     glVertexAttribPointer(VS_COLOR, 4, GL_FLOAT,GL_TRUE, 0, &colour );

@@ -97,7 +97,7 @@ const char *fragmentFooter =
 "#endif                                                     \n"\
 "                                                           \n"\
 "#ifdef ALPHA_TEST                                          \n"\
-ALPHA_TEST
+ ALPHA_TEST
 "#endif                                                     \n"\
 "}                                                          \n";
 
@@ -111,7 +111,7 @@ const char *fragmentCopy =
 "void main()                                                \n"\
 "{                                                          \n"\
 "   gl_FragColor = texture2D(uTex0,vTexCoord0).bgra;        \n"\
-ALPHA_TEST
+ ALPHA_TEST
 "}";
 
 GLuint copyProgram,copyAlphaLocation;

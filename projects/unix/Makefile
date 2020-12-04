@@ -238,7 +238,7 @@ LDLIBS += $(SDL_LDLIBS)
 ifneq ("$(APIDIR)","")
   CFLAGS += "-I$(APIDIR)"
 else
-  TRYDIR = ../../../mupen64plus-core/src/api
+  TRYDIR = ../../../mupen64plus-core-web-netplay/src/api
   ifneq ("$(wildcard $(TRYDIR)/m64p_types.h)","")
     CFLAGS += -I$(TRYDIR)
   else
@@ -372,7 +372,7 @@ OBJDIRS = $(dir $(OBJECTS))
 $(shell $(MKDIR) $(OBJDIRS))
 
 # build targets
-TARGET = mupen64plus-video-rice$(POSTFIX).$(SO_EXTENSION)
+TARGET = mupen64plus-video-rice-web-netplay$(POSTFIX).$(SO_EXTENSION)
 
 targets:
 	@echo "Mupen64plus-video-rice N64 Graphics plugin makefile. "

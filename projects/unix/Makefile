@@ -268,6 +268,7 @@ endif
 # set base program pointers and flags
 CC        ?= $(CROSS_COMPILE)gcc
 CXX       ?= $(CROSS_COMPILE)g++
+AR       = ar
 RM       ?= rm -f
 INSTALL  ?= install
 MKDIR ?= mkdir -p
@@ -373,6 +374,7 @@ $(shell $(MKDIR) $(OBJDIRS))
 
 # build targets
 TARGET = mupen64plus-video-rice-web-netplay$(POSTFIX).$(SO_EXTENSION)
+TARGET_STATIC = mupen64plus-video-rice-web-netplay$(POSTFIX).a
 
 targets:
 	@echo "Mupen64plus-video-rice N64 Graphics plugin makefile. "
@@ -402,7 +404,7 @@ targets:
 	@echo "    DEBUG=1       == add debugging symbols"
 	@echo "    V=1           == show verbose compiler output"
 
-all: $(TARGET)
+all: $(TARGET) $(TARGET_STATIC)
 
 install: $(TARGET)
 	$(INSTALL) -d "$(DESTDIR)$(PLUGINDIR)"
@@ -434,5 +436,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 
 $(TARGET): $(OBJECTS)
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+$(TARGET_STATIC): $(OBJECTS)
+	$(AR) rcs $@ $^
 
 .PHONY: all clean install uninstall targets

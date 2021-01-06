@@ -1,4 +1,5 @@
 /projects/unix/_obj*/
 /projects/unix/mupen64plus-video-rice*.so
 /projects/unix/mupen64plus-video-rice*.js
+/projects/unix/mupen64plus-video-rice*.a
 *.wasm

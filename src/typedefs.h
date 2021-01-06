@@ -21,7 +21,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _TYPEDEFS_H_
 
 #include "VectorMath.h"
+#if (!M64P_STATIC_PLUGINS)
 #include "osal_preproc.h"
+#else
+typedef unsigned int BOOL;
+#endif
 
 #define uchar  unsigned char
 #define uint16 unsigned short

@@ -23,6 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m64p_types.h"
 #include "osal_opengl.h"
 
+#ifdef M64P_STATIC_PLUGINS
+#define M64P_CORE_PROTOTYPES 1
+
+#endif
 #define M64P_PLUGIN_PROTOTYPES 1
 #include "Config.h"
 #include "Debugger.h"
@@ -53,7 +57,7 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
 {
     DebugMessage(M64MSG_INFO, "Initializing OpenGL Device Context.");
     Lock();
-
+    
     CGraphicsContext::Initialize(dwWidth, dwHeight, bWindowed );
 
     if( bWindowed )
@@ -67,6 +71,8 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
         windowSetting.toolbarHeightToUse = 0;
     }
 
+
+
     int  depthBufferDepth = options.OpenglDepthBufferSetting;
     int  colorBufferDepth = 32;
     int bVerticalSync = windowSetting.bVerticalSync;
@@ -74,9 +80,10 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
 
     // init sdl & gl
     DebugMessage(M64MSG_VERBOSE, "Initializing video subsystem...");
+
     if (CoreVideo_Init() != M64ERR_SUCCESS)
         return false;
-
+    
     /* hard-coded attribute values */
     const int iDOUBLEBUFFER = 1;
 
@@ -85,6 +92,7 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
     CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, bVerticalSync);
     CoreVideo_GL_SetAttribute(M64P_GL_BUFFER_SIZE, colorBufferDepth);
     CoreVideo_GL_SetAttribute(M64P_GL_DEPTH_SIZE, depthBufferDepth);
+
 
     /* set multisampling */
     if (options.multiSampling > 0)
@@ -129,7 +137,7 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
     /* Get function pointers to OpenGL extensions (blame Microsoft Windows for this) */
     OGLExtensions_Init();
 #endif
-
+    
     char caption[500];
     sprintf(caption, "%s v%i.%i.%i", PLUGIN_NAME, VERSION_PRINTF_SPLIT(PLUGIN_VERSION));
     CoreVideo_SetCaption(caption);

@@ -17,6 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#if M64P_STATIC_PLUGINS
+#define M64P_CORE_PROTOTYPES 1
+#endif
 #include "CSortedList.h"
 #include "Debugger.h"
 #include "RSP_Parser.h"
@@ -25,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "liblinux/BMGImage.h"
 #include "liblinux/pngrw.h"
 #include "m64p_types.h"
+#include "m64p_config.h"
 #include "osal_files.h"
 #include "osal_preproc.h"
 

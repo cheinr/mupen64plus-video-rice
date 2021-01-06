@@ -20,12 +20,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _DLLINTERFACE_H_
 #define _DLLINTERFACE_H_
 
+#ifdef M64P_STATIC_PLUGINS
+#define M64P_CORE_PROTOTYPES 1
+#endif
+
 #define M64P_PLUGIN_PROTOTYPES 1
 #include "m64p_config.h"
 #include "m64p_plugin.h"
 #include "m64p_vidext.h"
+
+#if (!M64P_STATIC_PLUGINS)
 #include "osal_preproc.h"
 #include "typedefs.h"
+
+#else
+#include <stdbool.h>
+#define uchar  unsigned char
+#define uint16 unsigned short
+#define uint32 unsigned int
+#define uint64 unsigned long long
+
+typedef unsigned int BOOL;
+#endif
+
+
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+EXPORT m64p_error CALL PluginGetVersionVideo(m64p_plugin_type *PluginType, int *PluginVersion, int *APIVersion, const char **PluginNamePtr, int *Capabilities);
+
+#ifdef __cplusplus
+}
+#endif
 
 typedef struct {
     float   fViWidth, fViHeight;
@@ -57,6 +87,7 @@ typedef struct {
     uint32  lastSecFrameCount;
     uint32  lastSecDlistCount;
 }WindowSettingStruct;
+
 
 typedef enum 
 {
@@ -160,6 +191,7 @@ extern unsigned int  *g_pRDRAMu32;
 extern signed char   *g_pRDRAMs8;
 extern unsigned char *g_pRDRAMu8;
 
+#if (!M64P_STATIC_PLUGINS)
 /* declarations of pointers to Core config functions */
 extern ptr_ConfigListSections     ConfigListSections;
 extern ptr_ConfigOpenSection      ConfigOpenSection;
@@ -183,6 +215,10 @@ extern ptr_ConfigGetUserConfigPath     ConfigGetUserConfigPath;
 extern ptr_ConfigGetUserDataPath       ConfigGetUserDataPath;
 extern ptr_ConfigGetUserCachePath      ConfigGetUserCachePath;
 
+
+
+
+
 /* declarations of pointers to Core video extension functions */
 extern ptr_VidExt_Init                  CoreVideo_Init;
 extern ptr_VidExt_Quit                  CoreVideo_Quit;
@@ -196,12 +232,51 @@ extern ptr_VidExt_GL_SetAttribute       CoreVideo_GL_SetAttribute;
 extern ptr_VidExt_GL_GetAttribute       CoreVideo_GL_GetAttribute;
 extern ptr_VidExt_GL_SwapBuffers        CoreVideo_GL_SwapBuffers;
 
+#else
+
+#define CoreVideo_Init VidExt_Init
+#define CoreVideo_Quit VidExt_Init
+#define CoreVideo_ListFullscreenModes VidExt_ListFullscreenModes
+#define CoreVideo_SetVideoMode VidExt_SetVideoMode
+#define CoreVideo_SetCaption VidExt_SetCaption
+#define CoreVideo_ToggleFullScreen VidExt_ToggleFullScreen
+#define CoreVideo_ResizeWindow VidExt_ResizeWindow
+#define CoreVideo_GL_GetProcAddress VidExt_GL_GetProcAddress
+#define CoreVideo_GL_SetAttribute VidExt_GL_SetAttribute
+#define CoreVideo_GL_GetAttribute VidExt_GL_GetAttribute
+#define CoreVideo_GL_SwapBuffers VidExt_GL_SwapBuffers
+
+#endif
+
 /* global functions provided by Video.cpp */
 extern char generalText[];
 extern void (*renderCallback)(int);
 void DebugMessage(int level, const char *message, ...);
 
 void SetVIScales();
+
+#if M64P_STATIC_PLUGINS
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+EXPORT int CALL RomOpenVideo(void);
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+EXPORT void CALL RomClosedVideo(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+
 extern void _VIDEO_DisplayTemporaryMessage2(const char *msg, ...);
 extern void _VIDEO_DisplayTemporaryMessage(const char *msg);
 extern void XBOX_Debugger_Log(const char *Message, ...);

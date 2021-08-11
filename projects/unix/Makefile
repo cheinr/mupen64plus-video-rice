@@ -142,7 +142,7 @@ CXXFLAGS += -fvisibility-inlines-hidden
 LDFLAGS += $(SHARED)
 
 ifeq ($(CPU), X86)
-  CFLAGS += -msse
+  CFLAGS += -msse -msimd128
 endif
 
 # Since we are building a shared library, we must compile with -fPIC on some architectures
@@ -181,7 +181,7 @@ ifeq ($(OS), OSX)
       LDFLAGS += -bundle
       LDLIBS += -ldl
     else
-      CFLAGS += -pipe -mmmx -msse -fomit-frame-pointer -arch i686 -mmacosx-version-min=10.6 -isysroot $(OSX_SDK_PATH)
+      CFLAGS += -pipe -mmmx -msse -msimd128 -fomit-frame-pointer -arch i686 -mmacosx-version-min=10.6 -isysroot $(OSX_SDK_PATH)
       LDFLAGS += -bundle
       LDLIBS += -ldl
     endif
@@ -253,7 +253,7 @@ LDLIBS += $(SDL_LDLIBS)
 ifneq ("$(APIDIR)","")
   CFLAGS += "-I$(APIDIR)"
 else
-  TRYDIR = ../../../mupen64plus-core/src/api
+  TRYDIR = ../../../mupen64plus-core-web-netplay/src/api
   ifneq ("$(wildcard $(TRYDIR)/m64p_types.h)","")
     CFLAGS += -I$(TRYDIR)
   else
@@ -281,8 +281,9 @@ endif
 endif
 
 # set base program pointers and flags
-CC        = $(CROSS_COMPILE)gcc
-CXX       = $(CROSS_COMPILE)g++
+CC        ?= $(CROSS_COMPILE)gcc
+CXX       ?= $(CROSS_COMPILE)g++
+AR        = ar
 RM       ?= rm -f
 INSTALL  ?= install
 MKDIR ?= mkdir -p
@@ -370,7 +371,8 @@ OBJDIRS = $(dir $(OBJECTS))
 $(shell $(MKDIR) $(OBJDIRS))
 
 # build targets
-TARGET = mupen64plus-video-rice$(POSTFIX).$(SO_EXTENSION)
+TARGET = mupen64plus-video-rice-web-netplay$(POSTFIX).$(SO_EXTENSION)
+TARGET_STATIC = mupen64plus-video-rice-web-netplay-web$(POSTIFX).a
 
 targets:
 	@echo "Mupen64plus-video-rice N64 Graphics plugin makefile. "
@@ -400,7 +402,7 @@ targets:
 	@echo "    DEBUG=1       == add debugging symbols"
 	@echo "    V=1           == show verbose compiler output"
 
-all: $(TARGET)
+all: $(TARGET) $(TARGET_STATIC)
 
 install: $(TARGET)
 	$(INSTALL) -d "$(DESTDIR)$(PLUGINDIR)"
@@ -432,5 +434,9 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 
 $(TARGET): $(OBJECTS)
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+$(TARGET_STATIC): $(OBJECTS)
+	$(AR) rcs $@ $^
+
 
 .PHONY: all clean install uninstall targets

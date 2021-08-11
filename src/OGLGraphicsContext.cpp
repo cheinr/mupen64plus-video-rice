@@ -23,6 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m64p_types.h"
 #include "osal_opengl.h"
 
+#ifdef M64P_STATIC_PLUGINS
+#define M64P_CORE_PROTOTYPES 1
+#endif
 #define M64P_PLUGIN_PROTOTYPES 1
 #include "Config.h"
 #include "Debugger.h"

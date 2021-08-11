@@ -18,6 +18,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#ifdef M64P_STATIC_PLUGINS
+#define M64P_CORE_PROTOTYPES 1
+#endif
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +46,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m64p_common.h"
 #include "m64p_plugin.h"
 #include "m64p_types.h"
+#if (!M64P_STATIC_PLUGINS)
 #include "osal_dynamiclib.h"
+#endif
 #include "version.h"
 
 //=======================================================
@@ -71,6 +77,8 @@ bool frameWriteByCPURectFlag[20][20];
 std::vector<uint32> frameWriteRecord;
 
 void (*renderCallback)(int) = NULL;
+
+#if (!M64P_STATIC_PLUGINS)
 
 /* definitions of pointers to Core config functions */
 ptr_ConfigOpenSection      ConfigOpenSection = NULL;
@@ -104,6 +112,8 @@ ptr_VidExt_GL_GetProcAddress     CoreVideo_GL_GetProcAddress = NULL;
 ptr_VidExt_GL_SetAttribute       CoreVideo_GL_SetAttribute = NULL;
 ptr_VidExt_GL_GetAttribute       CoreVideo_GL_GetAttribute = NULL;
 ptr_VidExt_GL_SwapBuffers        CoreVideo_GL_SwapBuffers = NULL;
+
+#endif
 
 //---------------------------------------------------------------------------------------
 // Forward function declarations
@@ -576,7 +586,13 @@ extern "C" {
 #endif
 
 /* Mupen64Plus plugin functions */
-EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Context,
+EXPORT m64p_error CALL
+#if M64P_STATIC_PLUGINS
+PluginStartupVideo
+#else
+PluginStartup
+#endif
+(m64p_dynlib_handle CoreLibHandle, void *Context,
                                    void (*DebugCallback)(void *, int, const char *))
 {
     if (l_PluginInit)
@@ -588,7 +604,11 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
 
     /* attach and call the CoreGetAPIVersions function, check Config and Video Extension API versions for compatibility */
     ptr_CoreGetAPIVersions CoreAPIVersionFunc;
+#if M64P_STATIC_PLUGINS
+    CoreAPIVersionFunc = &CoreGetAPIVersions;
+#else
     CoreAPIVersionFunc = (ptr_CoreGetAPIVersions) osal_dynlib_getproc(CoreLibHandle, "CoreGetAPIVersions");
+#endif
     if (CoreAPIVersionFunc == NULL)
     {
         DebugMessage(M64MSG_ERROR, "Core emulator broken; no CoreAPIVersionFunc() function found.");
@@ -617,6 +637,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
         return M64ERR_INCOMPATIBLE;
     }
 
+#if (!M64P_STATIC_PLUGINS)
     /* Get the core config function pointers from the library handle */
     ConfigOpenSection = (ptr_ConfigOpenSection) osal_dynlib_getproc(CoreLibHandle, "ConfigOpenSection");
     ConfigSetParameter = (ptr_ConfigSetParameter) osal_dynlib_getproc(CoreLibHandle, "ConfigSetParameter");
@@ -665,7 +686,9 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
         DebugMessage(M64MSG_ERROR, "Couldn't connect to Core video extension functions");
         return M64ERR_INCOMPATIBLE;
     }
-
+    
+#endif // !M64P_STATIC_PLUGINS
+    
     /* open config section handles and set parameter default values */
     if (!InitConfiguration())
         return M64ERR_INTERNAL;
@@ -674,7 +697,13 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
     return M64ERR_SUCCESS;
 }
 
-EXPORT m64p_error CALL PluginShutdown(void)
+EXPORT m64p_error CALL
+#if M64P_STATIC_PLUGINS
+PluginShutdownVideo
+#else
+PluginShutdown
+#endif
+(void)
 {
     if (!l_PluginInit)
         return M64ERR_NOT_INIT;
@@ -697,7 +726,18 @@ EXPORT m64p_error CALL PluginShutdown(void)
     return M64ERR_SUCCESS;
 }
 
-EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *PluginVersion, int *APIVersion, const char **PluginNamePtr, int *Capabilities)
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+EXPORT m64p_error CALL
+
+#if M64P_STATIC_PLUGINS
+PluginGetVersionVideo
+#else
+PluginGetVersion
+#endif
+(m64p_plugin_type *PluginType, int *PluginVersion, int *APIVersion, const char **PluginNamePtr, int *Capabilities)
 {
     /* set version info */
     if (PluginType != NULL)
@@ -720,6 +760,10 @@ EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *Plugi
     return M64ERR_SUCCESS;
 }
 
+#ifdef __cplusplus
+}
+#endif
+
 //-------------------------------------------------------------------------------------
 
 
@@ -738,7 +782,14 @@ EXPORT void CALL MoveScreen (int xpos, int ypos)
 }
 
 //---------------------------------------------------------------------------------------
-EXPORT void CALL RomClosed(void)
+EXPORT void CALL
+#if M64P_STATIC_PLUGINS
+RomClosedVideo
+#else
+RomClosed
+#endif
+(void)
+  
 {
     TRACE0("To stop video");
     Ini_StoreRomOptions(&g_curRomInfo);
@@ -746,7 +797,13 @@ EXPORT void CALL RomClosed(void)
     TRACE0("Video is stopped");
 }
 
-EXPORT int CALL RomOpen(void)
+EXPORT int CALL
+#if M64P_STATIC_PLUGINS
+RomOpenVideo
+#else
+RomOpen
+#endif
+(void)
 {
     /* Read RiceVideoLinux.ini file, set up internal variables by reading values from core configuration API */
     LoadConfiguration();

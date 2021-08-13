@@ -434,17 +434,22 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
       }
      }*/
 
+
     glDepthMask(GL_TRUE);
     OPENGL_CHECK_ERRORS;
     glClearDepth(1.0f);
     OPENGL_CHECK_ERRORS;
+
+
     if( !g_curRomInfo.bForceScreenClear )
     {
+#if !(EMSCRIPTEN)
         glClear(GL_DEPTH_BUFFER_BIT);
         OPENGL_CHECK_ERRORS;
-    }
-    else
+#endif
+    } else {
         needCleanScene = true;
+    }
 
     status.bScreenIsDrawn = false;
 }

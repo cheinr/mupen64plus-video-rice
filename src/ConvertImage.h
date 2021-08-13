@@ -183,9 +183,9 @@ inline uint16 Convert555To565(uint16 w555)
 
 inline uint32 Convert555ToRGBA(uint16 w555)
 {
-    uint32 dwRed   = FiveToEight[(w555&RGBA5551_RedMask)  >> RGBA5551_RedShift];
+    uint32 dwBlue   = FiveToEight[(w555&RGBA5551_RedMask)  >> RGBA5551_RedShift];
     uint32 dwGreen = FiveToEight[(w555&RGBA5551_GreenMask)>> RGBA5551_GreenShift];
-    uint32 dwBlue  = FiveToEight[(w555&RGBA5551_BlueMask) >> RGBA5551_BlueShift];
+    uint32 dwRed  = FiveToEight[(w555&RGBA5551_BlueMask) >> RGBA5551_BlueShift];
     uint32 dwAlpha =             (w555&RGBA5551_AlphaMask) ? 0xFF : 0x00;
     return COLOR_RGBA(dwRed, dwGreen, dwBlue, dwAlpha);
 

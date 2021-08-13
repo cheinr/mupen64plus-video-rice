@@ -50,7 +50,8 @@ typedef struct _COORDRECT
 #define COLOR_RGBA(r,g,b,a) ((r&0xFF)<<16 | (g&0xFF)<<8 | (b&0xFF)<<0 | (a&0xFF)<<24)
 
 // convert DWORD R8G8B8A8 order to A8R8G8B8
-#define RGBA_TO_ARGB(rgba) ((rgba&0x000000FF)<<24 | (rgba&0xFF000000)>>8 | (rgba&0x00FF0000)>>8 | (rgba&0x0000FF00)>>8)
+// For some reason it appears 'rgba' is actually in the format A8B8G8R8
+#define RGBA_TO_ARGB(rgba) ((rgba&0x000000FF)<<24 | (rgba&0x0000FF00)<<8 | (rgba&0x00FF0000)>>8 | (rgba&0xFF000000)>>24)
 
 #define SURFFMT_A8R8G8B8 21
 

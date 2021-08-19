@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define M64P_CORE_PROTOTYPES 1
 #endif
 #define M64P_PLUGIN_PROTOTYPES 1
+
 #include "Config.h"
 #include "Debugger.h"
 #include "m64p_plugin.h"
@@ -352,7 +353,12 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
 {
     status.gFrameCount++;
 
+#if EMSCRIPTEN
+    glFinish();
+#else
     glFlush();
+#endif
+
     OPENGL_CHECK_ERRORS;
     //glFinish();
     //wglSwapIntervalEXT(0);
@@ -450,6 +456,7 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
     } else {
         needCleanScene = true;
     }
+
 
     status.bScreenIsDrawn = false;
 }

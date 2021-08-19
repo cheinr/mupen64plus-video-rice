@@ -995,7 +995,12 @@ void OGLRender::SetFogColor(uint32 r, uint32 g, uint32 b, uint32 a)
 void OGLRender::EndRendering(void)
 {
 #ifndef USE_GLES
+
+#if EMSCRIPTEN
+    glFinish();
+#else
     glFlush();
+#endif
     OPENGL_CHECK_ERRORS;
 #endif
     if( CRender::gRenderReferenceCount > 0 ) 

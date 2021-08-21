@@ -115,6 +115,11 @@ ptr_VidExt_GL_SwapBuffers        CoreVideo_GL_SwapBuffers = NULL;
 
 #endif
 
+#if EMSCRIPTEN
+extern uint32_t frameUpdated;
+extern uint32_t countSinceFrameLastUpdated;
+#endif
+
 //---------------------------------------------------------------------------------------
 // Forward function declarations
 
@@ -245,6 +250,28 @@ static void UpdateScreenStep2 (void)
         return;
     }
 
+#if EMSCRIPTEN
+
+    if (!frameUpdated) {
+      countSinceFrameLastUpdated++;
+    } else {
+      countSinceFrameLastUpdated = 0;
+    }
+
+    frameUpdated = 0;
+
+    // Since we're updating on CI change, freeze frames can prevent us from
+    // yielding to the event loop. This mitigates that.
+    if (countSinceFrameLastUpdated > 0) {
+
+      if( *g_GraphicsInfo.VI_ORIGIN_REG != status.curVIOriginReg ) {
+        if( *g_GraphicsInfo.VI_ORIGIN_REG < status.curDisplayBuffer || *g_GraphicsInfo.VI_ORIGIN_REG > status.curDisplayBuffer+0x2000  ) {
+          CGraphicsContext::Get()->UpdateFrame();
+        }
+      }
+    }
+#endif
+
     if( currentRomOptions.screenUpdateSetting==SCREEN_UPDATE_AT_VI_CHANGE )
     {
 
@@ -276,6 +303,7 @@ static void UpdateScreenStep2 (void)
         g_CritialSection.Unlock();
         return;
     }
+
 
     if( currentRomOptions.screenUpdateSetting >= SCREEN_UPDATE_AT_1ST_CI_CHANGE )
     {

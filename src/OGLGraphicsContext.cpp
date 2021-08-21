@@ -40,6 +40,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Video.h"
 #include "version.h"
 
+#if EMSCRIPTEN
+uint32_t frameUpdated = 0;
+#endif
+
 COGLGraphicsContext::COGLGraphicsContext() :
     m_pExtensionStr(NULL)
 {
@@ -422,7 +426,10 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
        glUseProgram(program);
    }
 
+
    CoreVideo_GL_SwapBuffers();
+
+   frameUpdated = 1;
    
    /*if(options.bShowFPS)
      {

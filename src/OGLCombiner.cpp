@@ -545,7 +545,12 @@ GLuint COGLColorCombiner::GenerateCycle12Program()
             strcat(newFrgStr, "vec3 AColor = vec3(1.0);\n");
             break;
         case CCMUX_NOISE : // 7
-            strcat(newFrgStr, "vec3 AColor = noise3(0.0);\n");
+#if EMSCRIPTEN
+          // noise3 doesn't seem to work with WebGL at the moment
+          strcat(newFrgStr, "vec3 AColor = vec3(0.0);\n");
+#else
+          strcat(newFrgStr, "vec3 AColor = noise3(0.0);\n");
+#endif
             break;
         case CCMUX_0 : // 8
         default: // everything > CCMUX_0 (8) is 0
@@ -860,7 +865,12 @@ GLuint COGLColorCombiner::GenerateCycle12Program()
                         strcat(newFrgStr, "AColor = vec3(1.0, 1.0, 1.0);\n");
                         break;
                     case CCMUX_NOISE : // 7
-                        strcat(newFrgStr, "AColor = noise3(0.0);\n");
+#if EMSCRIPTEN
+          // noise3 doesn't seem to work with WebGL at the moment
+          strcat(newFrgStr, "vec3 AColor = vec3(0.0);\n");
+#else
+          strcat(newFrgStr, "vec3 AColor = noise3(0.0);\n");
+#endif
                         break;
                     case CCMUX_0 : // 8
                     default: // everything > CCMUX_0 (8) is 0

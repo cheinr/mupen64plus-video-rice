@@ -37,6 +37,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m64p_types.h"
 #include "osal_preproc.h"
 
+#if EMSCRIPTEN
+#include "emscripten.h"
+#endif
+
 #define INI_FILE        "RiceVideoLinux.ini"
 
 static m64p_handle l_ConfigVideoRice = NULL;
@@ -514,6 +518,29 @@ BOOL LoadConfiguration(void)
     return TRUE;
 }
 
+#if EMSCRIPTEN
+
+EM_JS(int, loadRomConfigOptionOverride, (const char* configKey), {
+    const config = UTF8ToString(configKey);
+
+    const maybeRomConfigOptionOverrides = Module.romConfigOptionOverrides;
+
+    if (maybeRomConfigOptionOverrides) {
+      const maybeRiceConfigOptionOverrides = maybeRomConfigOptionOverrides.videoRice;
+
+      if (maybeRiceConfigOptionOverrides) {
+        const maybeConfigOverride = maybeRiceConfigOptionOverrides[config];
+
+        if (maybeConfigOverride != null) {
+          return parseInt(maybeConfigOverride);
+        }
+      }
+    }
+
+    return -1;
+  });
+#endif
+
 void GenerateCurrentRomOptions()
 {
     currentRomOptions.N64FrameBufferEmuType     =g_curRomInfo.dwFrameBufferOption;  
@@ -524,6 +551,43 @@ void GenerateCurrentRomOptions()
     currentRomOptions.bNormalBlender            =g_curRomInfo.dwNormalBlender;
     currentRomOptions.bFastTexCRC               =g_curRomInfo.dwFastTextureCRC;
     currentRomOptions.bAccurateTextureMapping   =g_curRomInfo.dwAccurateTextureMapping;
+
+
+#if EMSCRIPTEN
+    // Apply emscripten video config overrides
+
+    uint32 n64FrameBufferEmuTypeOverride = loadRomConfigOptionOverride("FrameBufferSetting");
+    if (-1 != n64FrameBufferEmuTypeOverride)
+      currentRomOptions.N64FrameBufferEmuType = n64FrameBufferEmuTypeOverride;
+
+    uint32 n64FrameBufferWriteBackControlOverride = loadRomConfigOptionOverride("FrameBufferWriteBackControl");
+    if (-1 != n64FrameBufferWriteBackControlOverride)
+      currentRomOptions.N64FrameBufferWriteBackControl = n64FrameBufferWriteBackControlOverride;
+
+    uint32 n64RenderToTextureEmuTypeOverride = loadRomConfigOptionOverride("RenderToTexture");
+    if (-1 != n64RenderToTextureEmuTypeOverride)
+      currentRomOptions.N64RenderToTextureEmuType = n64RenderToTextureEmuTypeOverride;
+
+    uint32 screenUpdateSettingOverride = loadRomConfigOptionOverride("ScreenUpdateSetting");
+    if (-1 != screenUpdateSettingOverride)
+      currentRomOptions.screenUpdateSetting = screenUpdateSettingOverride;
+
+    uint32 normalCombinerOverride = loadRomConfigOptionOverride("NormalColorCombiner");
+    if (-1 != normalCombinerOverride)
+      currentRomOptions.bNormalCombiner = normalCombinerOverride;
+
+    uint32 normalBlenderOverride = loadRomConfigOptionOverride("NormalAlphaBlender");
+    if (-1 != n64FrameBufferWriteBackControlOverride)
+      currentRomOptions.bNormalBlender = n64FrameBufferWriteBackControlOverride;
+
+    uint32 fastTextCRCOverride = loadRomConfigOptionOverride("FastTextureLoading");
+    if (-1 != fastTextCRCOverride)
+      currentRomOptions.bFastTexCRC = fastTextCRCOverride;
+
+    uint32 accurateTextureMappingOverride = loadRomConfigOptionOverride("AccurateTextureMapping");
+    if (-1 != accurateTextureMappingOverride)
+      currentRomOptions.bAccurateTextureMapping = accurateTextureMappingOverride;
+#endif
 
     options.enableHackForGames = NO_HACK_FOR_GAME;
     if ((strncmp((char*)g_curRomInfo.szGameName, "BANJO TOOIE", 11) == 0))

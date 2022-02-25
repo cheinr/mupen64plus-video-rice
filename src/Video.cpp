@@ -117,7 +117,7 @@ ptr_VidExt_GL_SwapBuffers        CoreVideo_GL_SwapBuffers = NULL;
 
 #if EMSCRIPTEN
 extern uint32_t frameUpdated;
-extern uint32_t countSinceFrameLastUpdated;
+uint32_t countSinceFrameLastUpdated = 0;
 #endif
 
 //---------------------------------------------------------------------------------------

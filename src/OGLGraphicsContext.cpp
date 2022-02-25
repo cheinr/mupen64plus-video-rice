@@ -429,7 +429,9 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
 
    CoreVideo_GL_SwapBuffers();
 
+#if EMSCRIPTEN
    frameUpdated = 1;
+#endif
    
    /*if(options.bShowFPS)
      {

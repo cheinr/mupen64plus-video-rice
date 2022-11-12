@@ -127,6 +127,13 @@ ifneq ("$(filter aarch64,$(HOST_CPU))","")
     PIC ?= 1
     NO_ASM := 1
 endif
+ifneq ("$(filter riscv64,$(HOST_CPU))","")
+    CPU := RISCV64
+    ARCH_DETECTED := 64BITS
+    PIC ?= 1
+    NO_ASM := 1
+    $(warning Architecture "$(HOST_CPU)" not officially supported.)
+endif
 ifeq ("$(CPU)","NONE")
   $(error CPU type "$(HOST_CPU)" not supported.  Please file bug report at 'https://github.com/mupen64plus/mupen64plus-core/issues')
 endif
@@ -162,8 +169,20 @@ ifeq ($(ARCH_DETECTED), 64BITS_32)
   ifeq ($(OS), FREEBSD)
     $(error Do not use the BITS=32 option with FreeBSD, use -m32 and -m elf_i386)
   endif
-  CFLAGS += -m32
-  LDFLAGS += -Wl,-m,elf_i386
+  ifneq ($(OS), OSX)
+    ifeq ($(OS), MINGW)
+      LDFLAGS += -Wl,-m,i386pe
+    else
+      CFLAGS += -m32
+      LDFLAGS += -Wl,-m,elf_i386
+    endif
+  endif
+endif
+
+ifeq ($(ARCH_DETECTED), 64BITS)
+  ifeq ($(OS), MINGW)
+    LDFLAGS += -Wl,-m,i386pep
+  endif
 endif
 
 # set special flags per-system

@@ -149,7 +149,10 @@ CXXFLAGS += -fvisibility-inlines-hidden
 LDFLAGS += $(SHARED)
 
 ifeq ($(CPU), X86)
-  CFLAGS += -msse -msimd128
+  CFLAGS += -msse
+ifeq ($(EMSCRIPTEN), 1)
+  CFLAGS += -msimd128
+endif
 endif
 
 # Since we are building a shared library, we must compile with -fPIC on some architectures
@@ -200,7 +203,7 @@ ifeq ($(OS), OSX)
       LDFLAGS += -bundle
       LDLIBS += -ldl
     else
-      CFLAGS += -pipe -mmmx -msse -msimd128 -fomit-frame-pointer -arch i686 -mmacosx-version-min=10.6 -isysroot $(OSX_SDK_PATH)
+      CFLAGS += -pipe -mmmx -msse -fomit-frame-pointer -arch i686 -mmacosx-version-min=10.6 -isysroot $(OSX_SDK_PATH)
       LDFLAGS += -bundle
       LDLIBS += -ldl
     endif
